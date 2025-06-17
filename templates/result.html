@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - Dysgraphia Detection{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white text-center">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Analysis Results
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <h5 class="mb-3">Uploaded Image</h5>
+                            <img src="{{ url_for('static', filename=image_path) }}" alt="Analyzed handwriting sample"
+                                class="img-fluid rounded shadow" style="max-height: 300px;">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <h5 class="mb-4">Prediction Result</h5>
+
+                            {% if prediction == 'Low Potential Dysgraphia' %}
+                            <div class="alert alert-success border-success">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <h4 class="alert-heading text-success">{{ prediction }}</h4>
+                                <p class="mb-0">The handwriting sample shows typical patterns with low indicators of
+                                    dysgraphia.</p>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning border-warning">
+                                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                                <h4 class="alert-heading text-warning">{{ prediction }}</h4>
+                                <p class="mb-0">The handwriting sample shows some patterns that may indicate dysgraphia
+                                    characteristics.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="row">
+                    <div class="col-12">
+                        {% if prediction == 'Low Potential Dysgraphia' %}
+                        <div class="card border-success">
+                            <div class="card-body">
+                                <h5 class="card-title text-success">
+                                    <i class="fas fa-lightbulb me-2"></i>Understanding Your Results
+                                </h5>
+                                <p class="card-text">
+                                    The analysis indicates that the handwriting sample shows typical patterns. This
+                                    suggests:
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Good letter formation and spacing
+                                    </li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Consistent writing patterns</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Typical motor control indicators
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning">
+                                    <i class="fas fa-lightbulb me-2"></i>Understanding Your Results
+                                </h5>
+                                <p class="card-text">
+                                    The analysis suggests potential indicators of dysgraphia. Common characteristics may
+                                    include:
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Irregular letter
+                                        spacing or formation</li>
+                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Inconsistent writing
+                                        patterns</li>
+                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Possible motor
+                                        control variations</li>
+                                </ul>
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Recommendation:</strong> Consider consulting with a qualified educational
+                                    specialist or healthcare provider for a comprehensive evaluation.
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-upload me-2"></i>Analyze Another Sample
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Important Disclaimer
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Medical Disclaimer:</strong> This tool is designed for educational and screening purposes
+                    only.
+                    It should not be used as a substitute for professional medical diagnosis, treatment, or advice.
+                    If you have concerns about dysgraphia or other learning disabilities, please consult with a
+                    qualified
+                    healthcare provider, educational psychologist, or special education professional.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

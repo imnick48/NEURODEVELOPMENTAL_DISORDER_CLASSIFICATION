@@ -1,2 +1,2 @@
 # NEURODEVELOPMENTAL_DISORDER_CLASSIFICATION
-A full stack ML pipeline made with python flask and it's template engine to analyse handwriting to predict whether the person have neurodevelopmental disease or not. 
+A full stack ML pipeline made with python flask and it's template engine to analyse handwriting to predict whether the person have neurodevelopmental disease or not. Uses  multiple computer vision models like 3-layer CNN, LeNet-5, MobileNetv2, EfficientNet B0 and B3, Vision Transformer all made using tensorflow etc.to run the project use command python3 -m venv .venv source ./.venv/bin/activate pip install -r requirements.txt python3 app.py and goto 127.0.0.1

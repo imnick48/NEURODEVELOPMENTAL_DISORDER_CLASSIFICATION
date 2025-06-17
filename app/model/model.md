@@ -1,0 +1,1 @@
+Put the trained model in this folder and name it 3_layer_cnn_with_data_aug.keras. Make sure the model is in .keras or just change the app.py for respective model.
