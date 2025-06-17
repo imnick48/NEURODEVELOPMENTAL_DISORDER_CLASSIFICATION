@@ -36,11 +36,6 @@ Open your browser to [http://127.0.0.1:5000](http://127.0.0.1:5000) to use the w
   - Select model architecture
   - View prediction results with confidence scores
 
-- **Comprehensive Analysis**:
-  - ROC curves and AUC metrics
-  - Model performance comparisons
-  - Detailed classification reports
-
 ## 🏗️ Project Structure
 
 ```
