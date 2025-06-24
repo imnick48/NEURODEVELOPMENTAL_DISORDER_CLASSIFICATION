@@ -1,6 +1,2 @@
 .venv/
-<<<<<<< HEAD
 # app/model/*.keras
-=======
-app/model/*.keras
->>>>>>> ef693a981933dde0a1aadffe55281d4932df6e30
