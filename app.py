@@ -6,9 +6,9 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-
+#3_layer_cnn_with_data_aug
 # Path to the .keras model
-MODEL_PATH = 'app/model/3_layer_cnn_with_data_aug.keras'
+MODEL_PATH = 'app/model/lenet_with_data_aug.keras'
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -60,6 +60,7 @@ def index():
                 preds = model.predict(img_array)
                 predicted_class_index = np.argmax(preds)
                 prediction_label = classes[predicted_class_index]
+                print(classes[predicted_class_index])
 
                 return render_template(
                     'result.html',

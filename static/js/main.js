@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeFormValidation();
     initializeImagePreview();
     initializeFormSubmission();
-    initializeBootstrapComponents();
 });
 function initializeFormValidation() {
     const forms = document.querySelectorAll('.needs-validation');
@@ -80,19 +79,6 @@ function initializeFormSubmission() {
         });
     }
 }
-
-function initializeBootstrapComponents() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl);
-    });
-}
-
 function showLoadingState(submitBtn, loadingSpinner) {
         submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
@@ -178,73 +164,6 @@ function validateImageFile(file) {
 
     return { valid: true };
 }
-
-function initializeDragAndDrop() {
-    const imageInput = document.getElementById('image');
-    const dropZone = imageInput.closest('.card-body');
-
-    if (!dropZone || !imageInput) return;
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
-    });
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, unhighlight, false);
-    });
-
-        dropZone.addEventListener('drop', handleDrop, false);
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    function highlight(e) {
-        dropZone.classList.add('drag-over');
-    }
-
-    function unhighlight(e) {
-        dropZone.classList.remove('drag-over');
-    }
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-
-        if (files.length > 0) {
-            imageInput.files = files;
-            imageInput.dispatchEvent(new Event('change'));
-        }
-    }
-}
-function initializeSmoothScrolling() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-}
-function initializeAdditionalFeatures() {
-    initializeDragAndDrop();
-    initializeSmoothScrolling();
-}
-document.addEventListener('DOMContentLoaded', function () {
-    initializeAdditionalFeatures();
-});
 const style = document.createElement('style');
 style.textContent = `
     .drag-over {
