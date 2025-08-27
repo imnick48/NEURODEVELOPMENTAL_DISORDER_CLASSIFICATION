@@ -27,6 +27,25 @@
                 {% endif %}
 
                 <form id="uploadForm" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+                    <!-- Classification Dropdown -->
+                    <div class="mb-4">
+                        <label for="classification" class="form-label">
+                            <i class="fas fa-tasks me-2"></i>Select Classification Type
+                        </label>
+                        <select class="form-select form-select-lg" id="classification" name="classification" required>
+                            <option value="" selected disabled>Choose classification...</option>
+                            <option value="dysgraphia_vs_normal">Dysgraphia vs Normal</option>
+                            <option value="low_vs_potential">Low Potential vs Potential</option>
+                            <option value="potential_vs_normal">Potential vs Normal</option>
+                            <option value="normal_vs_low">Normal vs Low Potential</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a classification type.
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
                     <div class="mb-4">
                         <label for="image" class="form-label">
                             <i class="fas fa-image me-2"></i>Select Handwriting Image
@@ -42,6 +61,7 @@
                         </div>
                     </div>
 
+                    <!-- Image Preview -->
                     <div id="imagePreview" class="text-center mb-4" style="display: none;">
                         <img id="previewImg" src="" alt="Preview" class="img-fluid rounded shadow"
                             style="max-height: 200px;">
@@ -65,21 +85,33 @@
 
                 <div class="mt-4">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card border-success">
                                 <div class="card-body text-center">
                                     <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
-                                    <h6 class="card-title">Low Potential</h6>
-                                    <p class="card-text small">Indicates typical handwriting patterns</p>
+                                    <h6 class="card-title">Normal</h6>
+                                    <p class="card-text small">Indicates typical handwriting patterns with no signs of
+                                        dysgraphia</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card border-warning">
                                 <div class="card-body text-center">
                                     <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2"></i>
-                                    <h6 class="card-title">Potential Dysgraphia</h6>
-                                    <p class="card-text small">May indicate dysgraphia characteristics</p>
+                                    <h6 class="card-title">Low Potential</h6>
+                                    <p class="card-text small">Shows mild indicators that may suggest low risk for
+                                        dysgraphia</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-danger">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-times-circle text-danger fa-2x mb-2"></i>
+                                    <h6 class="card-title">High Potential</h6>
+                                    <p class="card-text small">Shows strong indicators that may suggest dysgraphia
+                                        characteristics</p>
                                 </div>
                             </div>
                         </div>
@@ -87,24 +119,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-info-circle me-2"></i>
-                    About Dysgraphia Detection
-                </h5>
-            </div>
-            <div class="card-body">
-                <p class="mb-2">This tool uses machine learning to analyze handwriting samples for potential indicators
-                    of dysgraphia, a learning disability that affects writing abilities.</p>
-                <p class="mb-0 text-muted">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    <strong>Disclaimer:</strong> This tool is for educational purposes only and should not replace
-                    professional medical diagnosis.
-                </p>
-            </div>
-        </div> -->
     </div>
 </div>
 {% endblock %}

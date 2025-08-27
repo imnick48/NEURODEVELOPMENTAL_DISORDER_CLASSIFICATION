@@ -14,6 +14,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
+                    <!-- Uploaded Image -->
                     <div class="col-md-6">
                         <div class="text-center">
                             <h5 class="mb-3">Uploaded Image</h5>
@@ -21,74 +22,203 @@
                                 class="img-fluid rounded shadow" style="max-height: 300px;">
                         </div>
                     </div>
+
+                    <!-- Prediction Result -->
                     <div class="col-md-6">
                         <div class="text-center">
                             <h5 class="mb-4">Prediction Result</h5>
 
-                            {% if prediction == 'Low Potential Dysgraphia' %}
+                            {% if prediction == 'Normal' %}
+                            <!-- Normal Case -->
                             <div class="alert alert-success border-success">
                                 <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
                                 <h4 class="alert-heading text-success">{{ prediction }}</h4>
-                                <p class="mb-0">The handwriting sample shows typical patterns with low indicators of
-                                    dysgraphia.</p>
+                                <p class="mb-0">The handwriting sample appears typical with no signs of dysgraphia.</p>
                             </div>
-                            {% else %}
+
+                            {% elif prediction in ['Low Potential Dysgraphia', 'LowPotential'] %}
+                            <!-- Low Potential Case -->
                             <div class="alert alert-warning border-warning">
                                 <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                                <h4 class="alert-heading text-warning">{{ prediction }}</h4>
-                                <p class="mb-0">The handwriting sample shows some patterns that may indicate dysgraphia
-                                    characteristics.</p>
+                                <h4 class="alert-heading text-warning">Low Potential Dysgraphia</h4>
+                                <p class="mb-0">The handwriting sample shows some indicators that may suggest mild risk.
+                                </p>
+                            </div>
+
+                            {% elif prediction in ['High Potential Dysgraphia', 'Potential'] %}
+                            <!-- High Potential / Potential Case -->
+                            <div class="alert alert-danger border-danger">
+                                <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                                <h4 class="alert-heading text-danger">High Potential Dysgraphia</h4>
+                                <p class="mb-0">The handwriting sample shows strong indicators of dysgraphia.</p>
+                            </div>
+
+                            {% else %}
+                            <!-- Unknown Case -->
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                                <h4 class="alert-heading text-muted">{{ prediction }}</h4>
+                                <p class="mb-0">No detailed analysis available for this category.</p>
                             </div>
                             {% endif %}
+
                         </div>
                     </div>
                 </div>
 
                 <hr class="my-4">
 
+                <!-- Understanding Results Section -->
                 <div class="row">
                     <div class="col-12">
-                        {% if prediction == 'Low Potential Dysgraphia' %}
+                        {% if prediction == 'Normal' %}
                         <div class="card border-success">
                             <div class="card-body">
                                 <h5 class="card-title text-success">
                                     <i class="fas fa-lightbulb me-2"></i>Understanding Your Results
                                 </h5>
                                 <p class="card-text">
-                                    The analysis indicates that the handwriting sample shows typical patterns. This
-                                    suggests:
+                                    The handwriting sample appears typical. Key observations include:
                                 </p>
                                 <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success me-2"></i>Good letter formation and spacing
-                                    </li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Consistent writing patterns</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Typical motor control indicators
-                                    </li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Consistent letter formation and
+                                        spacing</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Stable writing patterns</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>No significant motor control
+                                        issues</li>
                                 </ul>
+
+                                <!-- Suggestions for Normal -->
+                                <div class="mt-4">
+                                    <h6 class="text-success">
+                                        <i class="fas fa-star me-2"></i>Suggestions to Maintain Good Handwriting
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><i class="fas fa-pencil-alt text-success me-2"></i>Continue regular
+                                                    writing practice</li>
+                                                <li><i class="fas fa-book text-success me-2"></i>Try creative writing
+                                                    exercises</li>
+                                                <li><i class="fas fa-palette text-success me-2"></i>Experiment with
+                                                    different writing tools</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><i class="fas fa-clock text-success me-2"></i>Take breaks during
+                                                    long writing sessions</li>
+                                                <li><i class="fas fa-chair text-success me-2"></i>Maintain good posture
+                                                    while writing</li>
+                                                <li><i class="fas fa-trophy text-success me-2"></i>Celebrate your
+                                                    writing achievements</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        {% else %}
+
+                        {% elif prediction in ['Low Potential Dysgraphia', 'LowPotential'] %}
                         <div class="card border-warning">
                             <div class="card-body">
                                 <h5 class="card-title text-warning">
                                     <i class="fas fa-lightbulb me-2"></i>Understanding Your Results
                                 </h5>
                                 <p class="card-text">
-                                    The analysis suggests potential indicators of dysgraphia. Common characteristics may
-                                    include:
+                                    The analysis suggests mild indicators of dysgraphia, such as:
                                 </p>
                                 <ul class="list-unstyled">
-                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Irregular letter
-                                        spacing or formation</li>
-                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Inconsistent writing
-                                        patterns</li>
-                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Possible motor
-                                        control variations</li>
+                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Occasional uneven
+                                        spacing</li>
+                                    <li><i class="fas fa-exclamation-circle text-warning me-2"></i>Some irregularities
+                                        in letter formation</li>
                                 </ul>
                                 <div class="alert alert-info mt-3">
                                     <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Recommendation:</strong> Consider consulting with a qualified educational
-                                    specialist or healthcare provider for a comprehensive evaluation.
+                                    <strong>Recommendation:</strong> Monitoring progress is suggested. If concerns
+                                    persist, consult a specialist.
+                                </div>
+
+                                <!-- Suggestions for Low Potential -->
+                                <div class="mt-4">
+                                    <h6 class="text-warning">
+                                        <i class="fas fa-tools me-2"></i>Helpful Practice Strategies
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><i class="fas fa-ruler text-warning me-2"></i>Practice on lined
+                                                    paper with guides</li>
+                                                <li><i class="fas fa-slow-down text-warning me-2"></i>Write slowly and
+                                                    focus on letter formation</li>
+                                                <li><i class="fas fa-hand-paper text-warning me-2"></i>Try finger
+                                                    exercises to strengthen grip</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><i class="fas fa-redo text-warning me-2"></i>Practice tracing
+                                                    letters and words</li>
+                                                <li><i class="fas fa-gamepad text-warning me-2"></i>Use fun writing apps
+                                                    and games</li>
+                                                <li><i class="fas fa-user-friends text-warning me-2"></i>Consider
+                                                    occupational therapy if needed</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% elif prediction in ['High Potential Dysgraphia', 'Potential'] %}
+                        <div class="card border-danger">
+                            <div class="card-body">
+                                <h5 class="card-title text-danger">
+                                    <i class="fas fa-lightbulb me-2"></i>Understanding Your Results
+                                </h5>
+                                <p class="card-text">
+                                    The handwriting sample shows strong indicators, such as:
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-times-circle text-danger me-2"></i>Severe inconsistencies in
+                                        writing patterns</li>
+                                    <li><i class="fas fa-times-circle text-danger me-2"></i>Frequent spacing and
+                                        alignment issues</li>
+                                </ul>
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Recommendation:</strong> Seek a professional educational or medical
+                                    evaluation promptly.
+                                </div>
+
+                                <!-- Suggestions for High Potential -->
+                                <div class="mt-4">
+                                    <h6 class="text-danger">
+                                        <i class="fas fa-hands-helping me-2"></i>Immediate Support Strategies
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><i class="fas fa-laptop text-danger me-2"></i>Consider using
+                                                    assistive technology</li>
+                                                <li><i class="fas fa-microphone text-danger me-2"></i>Try voice-to-text
+                                                    software</li>
+                                                <li><i class="fas fa-keyboard text-danger me-2"></i>Practice typing
+                                                    skills as alternative</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled small">
+                                                <li><i class="fas fa-user-md text-danger me-2"></i>Consult an
+                                                    occupational therapist</li>
+                                                <li><i class="fas fa-school text-danger me-2"></i>Speak with school
+                                                    support services</li>
+                                                <li><i class="fas fa-heart text-danger me-2"></i>Focus on effort, not
+                                                    just outcome</li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -96,6 +226,7 @@
                     </div>
                 </div>
 
+                <!-- Back Button -->
                 <div class="text-center mt-4">
                     <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
                         <i class="fas fa-upload me-2"></i>Analyze Another Sample
@@ -103,26 +234,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-shield-alt me-2"></i>
-                    Important Disclaimer
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-warning mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Medical Disclaimer:</strong> This tool is designed for educational and screening purposes
-                    only.
-                    It should not be used as a substitute for professional medical diagnosis, treatment, or advice.
-                    If you have concerns about dysgraphia or other learning disabilities, please consult with a
-                    qualified
-                    healthcare provider, educational psychologist, or special education professional.
-                </div>
-            </div>
-        </div> -->
     </div>
 </div>
 {% endblock %}
