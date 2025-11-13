@@ -50,6 +50,10 @@ CLASSIFICATION_MODELS = {
     "normal_vs_low": {
         "path": "app/model/NormalvsLowPotential/vt_normalvslow.keras",
         "classes": ["LowPotential", "Normal"]
+    },
+    "3Class": {
+        "path": "app/model/3Class/Vision_Transformer_3class.keras",
+        "classes": ["Potential`", "LowPotential", "Normal"]
     }
 }
 
