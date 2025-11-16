@@ -36,7 +36,7 @@ class ClassTokenLayer(layers.Layer):
 # ✅ Classification mapping (model path + class labels)
 CLASSIFICATION_MODELS = {
     "dysgraphia_vs_normal": {
-        "path": "app/model/DysgraphiaVsNormal/vision_transformer.keras",
+        "path": "app/model/DysgraphiavsNormal/normal_vs_dysgraphia_vision_transformer.keras",
         "classes": ["Dysgraphia", "Normal"]
     },
     "low_vs_potential": {
