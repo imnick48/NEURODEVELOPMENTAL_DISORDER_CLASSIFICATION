@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Image - Dysgraphia Detection{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white text-center">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-upload me-2"></i>
+                    Dysgraphia Detection
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-pen-nib fa-4x text-primary mb-3"></i>
+                    <p class="lead">Upload a handwriting sample to analyze for potential dysgraphia indicators.</p>
+                </div>
+
+                {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <form id="uploadForm" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+                    <!-- Classification Dropdown -->
+                    <div class="mb-4">
+                        <label for="classification" class="form-label">
+                            <i class="fas fa-tasks me-2"></i>Select Classification Type
+                        </label>
+                        <select class="form-select form-select-lg" id="classification" name="classification" required>
+                            <option value="" selected disabled>Choose classification...</option>
+                            <option value="dysgraphia_vs_normal">Dysgraphia vs Normal</option>
+                            <option value="potential_vs_normal">Normal vs High Potential</option>
+                            <option value="normal_vs_low">Normal vs Low Potential</option>
+                            <option value="3Class">3-Class (Normal vs Low vs High Potential)</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a classification type.
+                        </div>
+                    </div>
+
+                    <!-- Model Architecture Dropdown -->
+                    <div class="mb-4">
+                        <label for="model_architecture" class="form-label">
+                            <i class="fas fa-microchip me-2"></i>Select Model Architecture
+                        </label>
+                        <select class="form-select form-select-lg" id="model_architecture" name="model_architecture" required>
+                            <option value="" selected disabled>Choose model...</option>
+                            <option value="vision_transformer">Vision Transformer</option>
+                            <option value="lenet5">LeNet-5</option>
+                            <option value="cnn">CNN (3-Layer)</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a model architecture.
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="mb-4">
+                        <label for="image" class="form-label">
+                            <i class="fas fa-image me-2"></i>Select Handwriting Image
+                        </label>
+                        <input type="file" class="form-control form-control-lg" id="image" name="image"
+                            accept=".png,.jpg,.jpeg,.gif" required>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Supported formats: PNG, JPG, JPEG, GIF
+                        </div>
+                        <div class="invalid-feedback">
+                            Please select a valid image file.
+                        </div>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <div id="imagePreview" class="text-center mb-4" style="display: none;">
+                        <img id="previewImg" src="" alt="Preview" class="img-fluid rounded shadow"
+                            style="max-height: 200px;">
+                        <p class="text-muted mt-2">Image Preview</p>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="fas fa-search me-2"></i>
+                            Analyze Handwriting
+                        </button>
+                    </div>
+                </form>
+
+                <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Analyzing handwriting sample...</p>
+                </div>
+
+                <div class="mt-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                                    <h6 class="card-title">Normal</h6>
+                                    <p class="card-text small">Indicates typical handwriting patterns with no signs of
+                                        dysgraphia</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2"></i>
+                                    <h6 class="card-title">Low Potential</h6>
+                                    <p class="card-text small">Shows mild indicators that may suggest low risk for
+                                        dysgraphia</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-danger">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-times-circle text-danger fa-2x mb-2"></i>
+                                    <h6 class="card-title">High Potential</h6>
+                                    <p class="card-text small">Shows strong indicators that may suggest dysgraphia
+                                        characteristics</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

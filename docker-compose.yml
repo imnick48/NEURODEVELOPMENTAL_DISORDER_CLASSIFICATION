@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  flask-app:
+    image: nick48/dysgraphia-app
+    ports:
+      - "8080:8000"
+    restart: always

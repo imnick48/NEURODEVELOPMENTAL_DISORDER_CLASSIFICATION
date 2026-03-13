@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Error - Dysgraphia Detection{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-danger">
+            <div class="card-header bg-danger text-white text-center">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error Occurred
+                </h2>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-times-circle fa-4x text-danger mb-4"></i>
+
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">Oops! Something went wrong</h4>
+                    <p class="mb-0">{{ message }}</p>
+                </div>
+
+                <div class="mt-4">
+                    <h5>What you can do:</h5>
+                    <ul class="list-unstyled text-start">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Make sure your image file is in PNG, JPG, JPEG, or GIF format
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Ensure the image file size is reasonable (under 10MB)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Try refreshing the page and uploading again
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Check that the image shows clear handwriting samples
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-home me-2"></i>Go Back Home
+                    </a>
+                    <button onclick="window.history.back()" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>
+                    Need Help?
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">If you continue to experience issues, here are some troubleshooting tips:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-image me-2 text-primary"></i>Image Requirements</h6>
+                        <ul class="small">
+                            <li>Clear handwriting samples</li>
+                            <li>Good lighting and contrast</li>
+                            <li>Proper file format (PNG, JPG, JPEG, GIF)</li>
+                            <li>Reasonable file size</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-cogs me-2 text-primary"></i>Technical Issues</h6>
+                        <ul class="small">
+                            <li>Refresh your browser</li>
+                            <li>Clear browser cache</li>
+                            <li>Try a different browser</li>
+                            <li>Check your internet connection</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    If the error persists, the model might not be properly loaded on the server. Please contact the
+                    administrator.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
