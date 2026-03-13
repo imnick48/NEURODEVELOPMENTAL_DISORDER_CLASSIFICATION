@@ -45,7 +45,7 @@ CLASSIFICATION_MODELS = {
     "dysgraphia_vs_normal": {
         "classes": ["Dysgraphia", "Normal"],
         "models": {
-            "vision_transformer": "app/model/DysgraphiavsNormal/normal_vs_dysgraphia_vision_transformer.tflite",
+            "vision_transformer": "app/model/DysgraphiavsNormal/normal_vs_dysgraphia_vision_transformer.keras",
             "lenet5": "app/model/DysgraphiavsNormal/lenet_with_data_aug(Normal Vs dys).tflite",
             "cnn":    "app/model/DysgraphiavsNormal/3_layer_cnn_with_data_aug(Normal Vs Dys).tflite",
         }
