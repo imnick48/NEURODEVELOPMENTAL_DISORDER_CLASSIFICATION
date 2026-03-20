@@ -4,18 +4,19 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras import layers
 from tensorflow.keras.utils import custom_object_scope
 import numpy as np
-import os
-import io
-import base64
 from PIL import Image
 import tensorflow as tf
+import threading
+import os
+import gc
+import io
+import base64
 
 app = Flask(__name__)
 
-# Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Custom Layer for Vision Transformer
+
 class ClassTokenLayer(layers.Layer):
     def __init__(self, projection_dim, **kwargs):
         super().__init__(**kwargs)
@@ -32,115 +33,144 @@ class ClassTokenLayer(layers.Layer):
         config.update({"projection_dim": self.projection_dim})
         return config
 
-# Available model architectures
+
 MODEL_ARCHITECTURES = {
     "vision_transformer": "Vision Transformer",
     "lenet5": "LeNet-5",
     "cnn": "CNN (3-Layer)",
 }
 
-# Classification mapping (class labels + model paths per architecture)
-# lenet5 and cnn use .tflite, vision_transformer stays as .keras
 CLASSIFICATION_MODELS = {
+    "low_vs_potential": {
+        "classes": ["Low Potential", "Potential"],
+        "models": {
+            "vision_transformer": "app/model/LowPotentialvsHighPotential/vision_transformer_with_data_aug(lvh).tflite",
+            "lenet5": "app/model/LowPotentialvsHighPotential/lenet_with_data_aug(lvh).tflite",
+            "cnn":    "app/model/LowPotentialvsHighPotential/3_layer_cnn_with_data_aug(lvh).tflite",
+        }
+    },
     "dysgraphia_vs_normal": {
         "classes": ["Dysgraphia", "Normal"],
         "models": {
-            "vision_transformer": "app/model/DysgraphiavsNormal/normal_vs_dysgraphia_vision_transformer.keras",
-            "lenet5": "app/model/DysgraphiavsNormal/lenet_with_data_aug(Normal Vs dys).tflite",
-            "cnn":    "app/model/DysgraphiavsNormal/3_layer_cnn_with_data_aug(Normal Vs Dys).tflite",
+            "vision_transformer": "app/model/DysgraphiavsNormal/vision_transformer_with_data_aug(nvd).tflite",
+            "lenet5": "app/model/DysgraphiavsNormal/lenet_with_data_aug(nvd).tflite",
+            "cnn":    "app/model/DysgraphiavsNormal/3_layer_cnn_with_data_aug(nvd).tflite",
         }
     },
     "potential_vs_normal": {
-        "classes": ["Normal", "Potential"],
+        "classes": ["Potential", "Normal"],
         "models": {
-            "vision_transformer": "app/model/NormalvsHighPotential/vision_transformer_with_data_aug.tflite",
-            "lenet5": "app/model/NormalvsHighPotential/lenet_with_data_aug (Normal VsHigh).tflite",
-            "cnn":    "app/model/NormalvsHighPotential/3_layer_cnn_with_data_aug(Normal vs HighPotential).tflite",
+            "vision_transformer": "app/model/NormalvsHighPotential/vision_transformer_with_data_aug(nvh).tflite",
+            "lenet5": "app/model/NormalvsHighPotential/lenet_with_data_aug(nvh).tflite",
+            "cnn":    "app/model/NormalvsHighPotential/3_layer_cnn_with_data_aug(nvh).tflite",
         }
     },
     "normal_vs_low": {
         "classes": ["LowPotential", "Normal"],
         "models": {
-            "vision_transformer": "app/model/NormalvsLowPotential/vt_normalvslow.tflite",
-            "lenet5": "app/model/NormalvsLowPotential/lenet_with_data_aug(Normal vs Low).tflite",
-            "cnn":    "app/model/NormalvsLowPotential/3_layer_cnn_with_data_aug(Normal vs Low).tflite",
+            "vision_transformer": "app/model/NormalvsLowPotential/vision_transformer_with_data_aug(nvl).tflite",
+            "lenet5": "app/model/NormalvsLowPotential/lenet_with_data_aug(nvl).tflite",
+            "cnn":    "app/model/NormalvsLowPotential/3_layer_cnn_with_data_aug(nvl).tflite",
         }
     },
     "3Class": {
         "classes": ["Potential", "LowPotential", "Normal"],
         "models": {
-            "vision_transformer": "app/model/3Class/Vision_Transformer_3class.tflite",
-            "lenet5": "app/model/3Class/lenet5(3 class).tflite",
-            "cnn":    "app/model/3Class/cnn(3 class).tflite",
+            "vision_transformer": "app/model/3Class/vision_transformer_with_data_aug(3Class).tflite",
+            "lenet5": "app/model/3Class/lenet_with_data_aug(3Class).tflite",
+            "cnn":    "app/model/3Class/3_layer_cnn_with_data_aug(3Class).tflite",
         }
     }
 }
+POOL_SIZE = 3
 
-# Cache for loaded models — stores ('tflite', interpreter) or ('keras', model)
-loaded_models = {}
+_model_semaphores: dict[tuple, threading.Semaphore] = {}
+_semaphore_lock = threading.Lock()
 
-# Allowed file check
+
+def _get_semaphore(cache_key: tuple) -> threading.Semaphore:
+    if cache_key not in _model_semaphores:
+        with _semaphore_lock:
+            if cache_key not in _model_semaphores:
+                _model_semaphores[cache_key] = threading.Semaphore(POOL_SIZE)
+    return _model_semaphores[cache_key]
+
+
+class _InterpreterContext:
+    """Loads a fresh interpreter, yields it, then destroys it completely."""
+    def __init__(self, model_path: str, semaphore: threading.Semaphore):
+        self._model_path = model_path
+        self._semaphore  = semaphore
+        self._interp     = None
+
+    def __enter__(self) -> tf.lite.Interpreter:
+        self._semaphore.acquire()
+        self._interp = tf.lite.Interpreter(model_path=self._model_path)
+        self._interp.allocate_tensors()
+        return self._interp
+ 
+    def __exit__(self, *_):
+        try:
+            del self._interp
+            self._interp = None
+            gc.collect()
+            tf.keras.backend.clear_session()
+        finally:
+            self._semaphore.release()
+            print("[mem] Interpreter released and memory cleared.")
+
+
+def get_interpreter(classification_key: str, model_key: str) -> "_InterpreterContext":
+    cache_key  = (classification_key, model_key)
+    model_path = CLASSIFICATION_MODELS[classification_key]["models"][model_key]
+    semaphore  = _get_semaphore(cache_key)
+    return _InterpreterContext(model_path, semaphore)
+
+
+
+def run_prediction(classification_key: str, model_key: str, img_array: np.ndarray) -> np.ndarray:
+    with get_interpreter(classification_key, model_key) as interp:
+        input_details  = interp.get_input_details()
+        output_details = interp.get_output_details()
+        interp.set_tensor(input_details[0]['index'], img_array.astype(np.float32))
+        interp.invoke()
+        return interp.get_tensor(output_details[0]['index'])
+
+
+def preprocess_image(file_stream) -> tuple[np.ndarray, str]:
+    """Returns (img_array ready for inference, base64-encoded PNG for display)."""
+    img = Image.open(file_stream).convert('RGB')
+
+    # Encode original for display
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+
+    # Resize & normalise
+    img_array = img_to_array(img.resize((256, 256))) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+
+    return img_array, image_base64
+
+
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Load model with caching — handles both .tflite and .keras
-def get_model(classification_key, model_key):
-    cache_key = (classification_key, model_key)
-    if cache_key in loaded_models:
-        return loaded_models[cache_key]
-
-    model_path = CLASSIFICATION_MODELS[classification_key]["models"][model_key]
-
-    if model_path.endswith('.tflite'):
-        interpreter = tf.lite.Interpreter(model_path=model_path)
-        interpreter.allocate_tensors()
-        loaded_models[cache_key] = ('tflite', interpreter)
-    else:
-        with custom_object_scope({'ClassTokenLayer': ClassTokenLayer}):
-            model = load_model(model_path, compile=False)
-        loaded_models[cache_key] = ('keras', model)
-
-    return loaded_models[cache_key]
-
-# Run inference — works for both tflite and keras models
-def run_prediction(model_tuple, img_array):
-    model_type, model_obj = model_tuple
-
-    if model_type == 'tflite':
-        input_details = model_obj.get_input_details()
-        output_details = model_obj.get_output_details()
-        model_obj.set_tensor(input_details[0]['index'], img_array.astype(np.float32))
-        model_obj.invoke()
-        preds = model_obj.get_tensor(output_details[0]['index'])
-    else:
-        preds = model_obj.predict(img_array)
-
-    return preds
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        classification = request.form.get('classification')
+        classification    = request.form.get('classification')
         model_architecture = request.form.get('model_architecture')
 
         if not classification or classification not in CLASSIFICATION_MODELS:
             return render_template('index.html', error_message='Please select a valid classification type.')
-
         if not model_architecture or model_architecture not in MODEL_ARCHITECTURES:
             return render_template('index.html', error_message='Please select a valid model architecture.')
 
-        # Get class labels
-        model_info = CLASSIFICATION_MODELS[classification]
-        classes = model_info["classes"]
+        classes = CLASSIFICATION_MODELS[classification]["classes"]
 
-        # Load model (cached by classification + architecture)
-        try:
-            model_tuple = get_model(classification, model_architecture)
-            print(f"Using {MODEL_ARCHITECTURES[model_architecture]} model for {classification}")
-        except Exception as e:
-            return render_template('error.html', message=f"Error loading model: {e}")
-
-        # Check for image upload
         if 'image' not in request.files:
             return render_template('index.html', error_message='No file selected.')
 
@@ -148,45 +178,33 @@ def index():
         if file.filename == '':
             return render_template('index.html', error_message='No selected file.')
 
-        if file and allowed_file(file.filename):
-            try:
-                # Read image directly from stream (no disk save)
-                img = Image.open(file.stream).convert('RGB')
-
-                # Encode original image as base64 for display
-                buf = io.BytesIO()
-                img.save(buf, format='PNG')
-                buf.seek(0)
-                image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-
-                # Preprocess image (256x256)
-                img_resized = img.resize((256, 256))
-                img_array = img_to_array(img_resized) / 255.0
-                img_array = np.expand_dims(img_array, axis=0)
-
-                # Predict
-                preds = run_prediction(model_tuple, img_array)
-                predicted_class_index = np.argmax(preds)
-                prediction_label = classes[predicted_class_index]
-                confidence = round(float(np.max(preds)) * 100, 2)
-
-                return render_template(
-                    'result.html',
-                    prediction=prediction_label,
-                    confidence=confidence,
-                    image_base64=image_base64,
-                    selected_classification=classification,
-                    selected_model=MODEL_ARCHITECTURES[model_architecture]
-                )
-
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                return render_template('error.html', message=f"An error occurred during image processing: {e}")
-        else:
+        if not allowed_file(file.filename):
             return render_template('index.html', error_message='Invalid file type. Please upload PNG, JPG, JPEG, or GIF.')
 
+        try:
+            img_array, image_base64 = preprocess_image(file.stream)
+            preds = run_prediction(classification, model_architecture, img_array)
+
+            predicted_class_index = int(np.argmax(preds))
+            prediction_label = classes[predicted_class_index]
+            confidence = round(float(np.max(preds)) * 100, 2)
+
+            return render_template(
+                'result.html',
+                prediction=prediction_label,
+                confidence=confidence,
+                image_base64=image_base64,
+                selected_classification=classification,
+                selected_model=MODEL_ARCHITECTURES[model_architecture]
+            )
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return render_template('error.html', message=f"An error occurred during image processing: {e}")
+
     return render_template('index.html')
+
 
 @app.route('/error')
 def error_page():
@@ -194,4 +212,4 @@ def error_page():
     return render_template('error.html', message=message)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, threaded=True)
