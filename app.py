@@ -53,7 +53,7 @@ CLASSIFICATION_MODELS = {
     "dysgraphia_vs_normal": {
         "classes": ["Dysgraphia", "Normal"],
         "models": {
-            "vision_transformer": "app/model/DysgraphiavsNormal/vision_transformer_with_data_aug(nvd).keras",
+            "vision_transformer": "app/model/DysgraphiavsNormal/vision_transformer_with_data_aug(nvd).tflite",
             "lenet5": "app/model/DysgraphiavsNormal/lenet_with_data_aug(nvd).tflite",
             "cnn":    "app/model/DysgraphiavsNormal/3_layer_cnn_with_data_aug(nvd).tflite",
         }
@@ -61,7 +61,7 @@ CLASSIFICATION_MODELS = {
     "potential_vs_normal": {
         "classes": ["Potential", "Normal"],
         "models": {
-            "vision_transformer": "app/model/NormalvsHighPotential/vision_transformer_with_data_aug(nvh).keras",
+            "vision_transformer": "app/model/NormalvsHighPotential/vision_transformer_with_data_aug(nvh).tflite",
             "lenet5": "app/model/NormalvsHighPotential/lenet_with_data_aug(nvh).tflite",
             "cnn":    "app/model/NormalvsHighPotential/3_layer_cnn_with_data_aug(nvh).tflite",
         }
