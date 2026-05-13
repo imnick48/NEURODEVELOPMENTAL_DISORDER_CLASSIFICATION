@@ -12,6 +12,7 @@ import gc
 import io
 import base64
 
+
 app = Flask(__name__)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -52,7 +53,7 @@ CLASSIFICATION_MODELS = {
     "dysgraphia_vs_normal": {
         "classes": ["Dysgraphia", "Normal"],
         "models": {
-            "vision_transformer": "app/model/DysgraphiavsNormal/vision_transformer_with_data_aug(nvd).tflite",
+            "vision_transformer": "app/model/DysgraphiavsNormal/vision_transformer_with_data_aug(nvd).keras",
             "lenet5": "app/model/DysgraphiavsNormal/lenet_with_data_aug(nvd).tflite",
             "cnn":    "app/model/DysgraphiavsNormal/3_layer_cnn_with_data_aug(nvd).tflite",
         }
@@ -60,7 +61,7 @@ CLASSIFICATION_MODELS = {
     "potential_vs_normal": {
         "classes": ["Potential", "Normal"],
         "models": {
-            "vision_transformer": "app/model/NormalvsHighPotential/vision_transformer_with_data_aug(nvh).tflite",
+            "vision_transformer": "app/model/NormalvsHighPotential/vision_transformer_with_data_aug(nvh).keras",
             "lenet5": "app/model/NormalvsHighPotential/lenet_with_data_aug(nvh).tflite",
             "cnn":    "app/model/NormalvsHighPotential/3_layer_cnn_with_data_aug(nvh).tflite",
         }
@@ -97,27 +98,44 @@ def _get_semaphore(cache_key: tuple) -> threading.Semaphore:
 
 
 class _InterpreterContext:
-    """Loads a fresh interpreter, yields it, then destroys it completely."""
+    """Loads a fresh interpreter (TFLite) or Keras model, yields it, then destroys it completely."""
     def __init__(self, model_path: str, semaphore: threading.Semaphore):
         self._model_path = model_path
         self._semaphore  = semaphore
         self._interp     = None
+        self._keras_model = None
+        self._is_keras   = model_path.endswith('.keras')
 
-    def __enter__(self) -> tf.lite.Interpreter:
+    def __enter__(self):
         self._semaphore.acquire()
-        self._interp = tf.lite.Interpreter(model_path=self._model_path)
-        self._interp.allocate_tensors()
-        return self._interp
- 
+        if self._is_keras:
+            self._keras_model = load_model(
+                self._model_path,
+                custom_objects={"ClassTokenLayer": ClassTokenLayer}
+            )
+            return self
+        else:
+            self._interp = tf.lite.Interpreter(model_path=self._model_path)
+            self._interp.allocate_tensors()
+            return self._interp
+
+    def predict(self, img_array: np.ndarray) -> np.ndarray:
+        """Only used for .keras models (call via context object, not interpreter)."""
+        return self._keras_model.predict(img_array, verbose=0)
+
     def __exit__(self, *_):
         try:
-            del self._interp
-            self._interp = None
+            if self._is_keras:
+                del self._keras_model
+                self._keras_model = None
+            else:
+                del self._interp
+                self._interp = None
             gc.collect()
             tf.keras.backend.clear_session()
         finally:
             self._semaphore.release()
-            print("[mem] Interpreter released and memory cleared.")
+            print("[mem] Model released and memory cleared.")
 
 
 def get_interpreter(classification_key: str, model_key: str) -> "_InterpreterContext":
@@ -127,14 +145,20 @@ def get_interpreter(classification_key: str, model_key: str) -> "_InterpreterCon
     return _InterpreterContext(model_path, semaphore)
 
 
-
 def run_prediction(classification_key: str, model_key: str, img_array: np.ndarray) -> np.ndarray:
-    with get_interpreter(classification_key, model_key) as interp:
-        input_details  = interp.get_input_details()
-        output_details = interp.get_output_details()
-        interp.set_tensor(input_details[0]['index'], img_array.astype(np.float32))
-        interp.invoke()
-        return interp.get_tensor(output_details[0]['index'])
+    model_path = CLASSIFICATION_MODELS[classification_key]["models"][model_key]
+    ctx = get_interpreter(classification_key, model_key)
+
+    if model_path.endswith('.keras'):
+        with ctx as c:
+            return c.predict(img_array)
+    else:
+        with ctx as interp:
+            input_details  = interp.get_input_details()
+            output_details = interp.get_output_details()
+            interp.set_tensor(input_details[0]['index'], img_array.astype(np.float32))
+            interp.invoke()
+            return interp.get_tensor(output_details[0]['index'])
 
 
 def preprocess_image(file_stream) -> tuple[np.ndarray, str]:
